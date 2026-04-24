@@ -222,10 +222,10 @@ const CONFIG = {
     <h2>Energy flow</h2>
     <svg id="flow-svg" viewBox="0 0 500 390" style="display:block">
       <defs>
-        <marker id="arr-solar"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"/></marker>
-        <marker id="arr-battery" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#10b981"/></marker>
-        <marker id="arr-grid"    markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#6366f1"/></marker>
-        <marker id="arr-export"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ec4899"/></marker>
+        <marker id="arr-solar"   markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#f59e0b"/></marker>
+        <marker id="arr-battery" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#10b981"/></marker>
+        <marker id="arr-grid"    markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#6366f1"/></marker>
+        <marker id="arr-export"  markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#ec4899"/></marker>
       </defs>
 
       <!-- ── Arrows (behind nodes) ── -->
@@ -406,6 +406,17 @@ function renderFlowDiagram(solar, solarDirect, battCharge, battDischarge, gridIm
   const gh = gridImport   > 0.05;
   show("fl-grid-house",   gh); show("lb-grid-house",   gh);
   set("lb-grid-house",    fmt(gridImport));
+
+  // Scale arrow widths proportionally to energy flow
+  const totalFlow = solarDirect + battCharge + gridExport + battDischarge + gridImport || 1;
+  const maxW = 18, minW = 1.5;
+  const flowW = v => Math.max(minW, (Math.max(0, v) / totalFlow) * maxW).toFixed(1);
+  const setW  = (id, w) => { const el = document.getElementById(id); if (el) el.setAttribute("stroke-width", w); };
+  setW("fl-solar-house", flowW(solarDirect));
+  setW("fl-solar-bat",   flowW(battCharge));
+  setW("fl-solar-grid",  flowW(gridExport));
+  setW("fl-bat-house",   flowW(battDischarge));
+  setW("fl-grid-house",  flowW(gridImport));
 
   // House circle: total consumed
   set("nd-house-total", fmt(house) || "—");
