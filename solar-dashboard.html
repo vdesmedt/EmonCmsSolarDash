@@ -544,19 +544,19 @@ async function loadPower() {
     function fmtEta(hours) {
       const h = Math.floor(hours);
       const m = Math.round((hours - h) * 60);
-      return h > 0 ? `${h}h${m.toString().padStart(2,"0")}m` : `${m}m`;
+      return `${h.toString().padStart(2,"0")}:${m.toString().padStart(2,"0")}`;
     }
     let etaText = "";
     if (battCharge > battDisch && battCharge > 10) {
       const toFull = ((100 - battSoc) / 100) * CONFIG.batteryCapacityKwh;
       etaText = toFull > 0
-        ? `→ 100% ${fmtEta(toFull / (battCharge / 1000))}`
+        ? `100% in ${fmtEta(toFull / (battCharge / 1000))}`
         : "fully charged";
     } else if (house > 10) {
       const usableKwh = ((battSoc - CONFIG.batteryLowPct) / 100) * CONFIG.batteryCapacityKwh;
       etaText = usableKwh <= 0
         ? `below ${CONFIG.batteryLowPct}%`
-        : `→ ${CONFIG.batteryLowPct}% ${fmtEta(usableKwh / (house / 1000))}`;
+        : `${CONFIG.batteryLowPct}% in ${fmtEta(usableKwh / (house / 1000))}`;
     }
     document.getElementById("nd-battery-eta").textContent = etaText;
 
