@@ -234,13 +234,13 @@ const CONFIG = {
       <line id="fl-solar-house"  x1="250" y1="100" x2="250" y2="147" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arr-solar)"/>
       <text id="lb-solar-house"  x="258"  y="127"  fill="#f59e0b" font-size="12" font-weight="600"></text>
 
-      <!-- Solar → Battery (arc curving left along circumscribed circle) -->
-      <path id="fl-solar-bat"  d="M 231 95 Q 20 180 150 252" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-solar)"/>
-      <text id="lb-solar-bat"  x="68"  y="175" fill="#f59e0b" font-size="12" font-weight="600" text-anchor="end"></text>
+      <!-- Solar → Battery (arc centered on house, R=100, CCW) -->
+      <path id="fl-solar-bat"  d="M 250 105 A 100 100 0 0 0 168 262" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-solar)"/>
+      <text id="lb-solar-bat"  x="152"  y="156" fill="#f59e0b" font-size="12" font-weight="600" text-anchor="end"></text>
 
-      <!-- Solar → Grid (arc curving right along circumscribed circle) -->
-      <path id="fl-solar-grid" d="M 269 95 Q 480 180 350 252" fill="none" stroke="#ec4899" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-export)"/>
-      <text id="lb-solar-grid" x="432" y="175" fill="#ec4899" font-size="12" font-weight="600"></text>
+      <!-- Solar → Grid (arc centered on house, R=100, CW) -->
+      <path id="fl-solar-grid" d="M 250 105 A 100 100 0 0 1 332 262" fill="none" stroke="#ec4899" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-export)"/>
+      <text id="lb-solar-grid" x="348"  y="156" fill="#ec4899" font-size="12" font-weight="600"></text>
 
       <!-- Battery → House -->
       <line id="fl-bat-house"    x1="163" y1="265" x2="202" y2="238" stroke="#10b981" stroke-width="2.5" marker-end="url(#arr-battery)"/>
