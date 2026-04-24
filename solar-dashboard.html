@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solar Dashboard</title>
+  <style>
+    /* ─── Design tokens ──────────────────────────────────────────────────────── */
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --border:    #2a2d3a;
+      --text:      #e8eaf0;
+      --muted:     #6b7280;
+      --solar:     #f59e0b;
+      --battery:   #10b981;
+      --grid:      #6366f1;
+      --export:    #ec4899;
+      --accent:    #f59e0b;
+      --radius:    12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+    }
+
+    /* ─── Header ─────────────────────────────────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header h1 span { color: var(--solar); }
+
+    #last-updated {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ─── Period tabs ────────────────────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 7px 18px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.15s;
+    }
+
+    .tab.active, .tab:hover {
+      background: var(--solar);
+      color: #000;
+      border-color: var(--solar);
+      font-weight: 600;
+    }
+
+
+    /* ─── Bottom row: flow diagram ───────────────────────────────────────────── */
+    .bottom-row {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+    }
+
+    .panel h2 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    #flow-svg {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+    }
+
+
+    /* ─── Flow diagram SVG ───────────────────────────────────────────────────── */
+    #flow-svg text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+
+    /* Loading / error states */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--solar);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-banner {
+      background: #3b1a1a;
+      border: 1px solid #7c2d2d;
+      color: #fca5a5;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CONFIGURATION  — fill in your values before deploying
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+const CONFIG = {
+  // Base URL of your EmonCMS instance.
+  // When this file is served FROM EmonCMS just use "" (empty = same origin).
+  // If testing locally against a remote EmonCMS, set e.g. "https://emoncms.indri.be"
+  emoncmsBase: "",
+
+  // EmonCMS read-only API key (My Account → API Keys)
+  apiKey: "f7904483ddc8ef147b5505a67bad63f3",
+
+  // ── Feed IDs (all from the "inverter" tag) ──────────────────────────────────
+  feeds: {
+    // Cumulative energy (kWh)
+    solar:            132,  // pv_power_kwh
+    gridImport:       138,  // grid_power_import_kwh
+    gridExport:       141,  // grid_power_inject_kwh
+    houseConsumption: 135,  // load_power_kwh
+    batteryCharge:    130,  // battery_power_charge_kwh
+    batteryDischarge: 131,  // battery_power_discharge_kwh
+    batterySoc:       124,  // battery_soc (%)
+
+    // Live power (W)
+    solarPower:       126,  // pv_power
+    housePower:       134,  // load_power
+    battChargePower:  129,  // battery_power_charge
+    battDischPower:   128,  // battery_power_discharge
+    gridImportPower:  137,  // grid_power_import
+    gridExportPower:  140,  // grid_power_inject
+  },
+
+  // Battery capacity and low-threshold for ETA calculation
+  batteryCapacityKwh: 7.2,  // ← set to your battery's usable capacity in kWh
+  batteryLowPct:       5,   // ← warn threshold in %
+
+  // Energy cards refresh (default: 5 min)
+  refreshInterval:      5 * 60 * 1000,
+  // Live power refresh (default: 10 s)
+  powerRefreshInterval: 10 * 1000,
+};
+</script>
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<header>
+  <h1>&#9728;&#65039; Solar <span>Dashboard</span></h1>
+  <span id="last-updated">Loading…</span>
+</header>
+
+<div id="error-banner" class="error-banner"></div>
+
+<div class="tabs">
+  <button class="tab active" data-period="today">Today</button>
+  <button class="tab" data-period="week">This week</button>
+  <button class="tab" data-period="month">This month</button>
+  <button class="tab" data-period="year">This year</button>
+</div>
+
+
+<div class="bottom-row">
+  <!-- Energy flow diagram -->
+  <div class="panel">
+    <h2>Energy flow</h2>
+    <svg id="flow-svg" viewBox="0 0 500 390" style="display:block">
+      <defs>
+        <marker id="arr-solar"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"/></marker>
+        <marker id="arr-battery" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#10b981"/></marker>
+        <marker id="arr-grid"    markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#6366f1"/></marker>
+        <marker id="arr-export"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ec4899"/></marker>
+      </defs>
+
+      <!-- ── Arrows (behind nodes) ── -->
+
+      <!-- Solar → House (direct use) -->
+      <line id="fl-solar-house"  x1="250" y1="118" x2="250" y2="135" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arr-solar)"/>
+      <text id="lb-solar-house"  x="258"  y="138"  fill="#f59e0b" font-size="12" font-weight="600"></text>
+
+      <!-- Solar → Battery (arc curving left along circumscribed circle) -->
+      <path id="fl-solar-bat"  d="M 199 74 Q 30 102 73 271" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-solar)"/>
+      <text id="lb-solar-bat"  x="88"  y="148" fill="#f59e0b" font-size="12" font-weight="600" text-anchor="end"></text>
+
+      <!-- Solar → Grid (arc curving right along circumscribed circle) -->
+      <path id="fl-solar-grid" d="M 301 74 Q 470 102 403 271" fill="none" stroke="#ec4899" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-export)"/>
+      <text id="lb-solar-grid" x="412" y="148" fill="#ec4899" font-size="12" font-weight="600"></text>
+
+      <!-- Battery → House -->
+      <line id="fl-bat-house"    x1="127" y1="287" x2="192" y2="245" stroke="#10b981" stroke-width="2.5" marker-end="url(#arr-battery)"/>
+      <text id="lb-bat-house"    x="148"  y="275"  fill="#10b981" font-size="12" font-weight="600" text-anchor="end"></text>
+
+      <!-- Grid → House -->
+      <line id="fl-grid-house"   x1="373" y1="287" x2="308" y2="245" stroke="#6366f1" stroke-width="2.5" marker-end="url(#arr-grid)"/>
+      <text id="lb-grid-house"   x="352"  y="275"  fill="#6366f1" font-size="12" font-weight="600"></text>
+
+      <!-- ── Node: Solar (top center) ── -->
+      <circle cx="250" cy="65" r="52" fill="#1a1d27" stroke="#f59e0b" stroke-width="2"/>
+      <text x="250" y="49"  text-anchor="middle" font-size="18">☀️</text>
+      <text x="250" y="63"  text-anchor="middle" fill="#f59e0b"  font-size="10" font-weight="700" letter-spacing="1">SOLAR</text>
+      <text x="250" y="75"  text-anchor="middle" fill="#f59e0b"  font-size="11" font-weight="600" id="nd-solar-power">— W</text>
+      <text x="250" y="89"  text-anchor="middle" fill="#e8eaf0"  font-size="11" font-weight="700" id="nd-solar">—</text>
+
+      <!-- ── Node: House (center) ── -->
+      <circle cx="250" cy="205" r="70" fill="#1a1d27"/>
+      <!-- Energy mix ring (r=58, stroke-width=20 → band sits at r 48–68) -->
+      <circle id="house-arc-solar"   cx="250" cy="205" r="58" fill="none" stroke="#f59e0b" stroke-width="20" stroke-dasharray="0 364.4" stroke-dashoffset="91.1" stroke-linecap="butt"/>
+      <circle id="house-arc-battery" cx="250" cy="205" r="58" fill="none" stroke="#10b981" stroke-width="20" stroke-dasharray="0 364.4" stroke-dashoffset="91.1" stroke-linecap="butt"/>
+      <circle id="house-arc-grid"    cx="250" cy="205" r="58" fill="none" stroke="#6366f1" stroke-width="20" stroke-dasharray="0 364.4" stroke-dashoffset="91.1" stroke-linecap="butt"/>
+      <!-- Percentage labels on the arc (positioned by JS) -->
+      <text id="arc-pct-solar"   text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="700"></text>
+      <text id="arc-pct-battery" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="700"></text>
+      <text id="arc-pct-grid"    text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="700"></text>
+      <circle cx="250" cy="205" r="70" fill="none" stroke="#4b5563" stroke-width="1.5"/>
+      <!-- Inner: power + total -->
+      <text x="250" y="202" text-anchor="middle" fill="#e8eaf0" font-size="12" font-weight="600" id="nd-house-power">— W</text>
+      <text x="250" y="217" text-anchor="middle" fill="#9ca3af" font-size="10" id="nd-house-total">— kWh</text>
+
+      <!-- ── Node: Battery (bottom-left) ── -->
+      <circle cx="85"  cy="318" r="48" fill="#1a1d27" stroke="#10b981" stroke-width="2"/>
+      <text x="85"  y="300" text-anchor="middle" font-size="16">🔋</text>
+      <text x="85"  y="313" text-anchor="middle" fill="#10b981"  font-size="10" font-weight="700" letter-spacing="1">BATTERY</text>
+      <text x="85"  y="325" text-anchor="middle" fill="#10b981"  font-size="11" font-weight="600" id="nd-battery-power">— W</text>
+      <text x="85"  y="337" text-anchor="middle" fill="#e8eaf0"  font-size="12" font-weight="700" id="nd-battery-soc">— %</text>
+      <text x="85"  y="349" text-anchor="middle" fill="#9ca3af"  font-size="9"  id="nd-battery-eta"></text>
+
+      <!-- ── Node: Grid (bottom-right) ── -->
+      <circle cx="415" cy="318" r="48" fill="#1a1d27" stroke="#6366f1" stroke-width="2"/>
+      <text x="415" y="302" text-anchor="middle" font-size="18">⚡</text>
+      <text x="415" y="316" text-anchor="middle" fill="#6366f1"  font-size="10" font-weight="700" letter-spacing="1">GRID</text>
+      <text x="415" y="328" text-anchor="middle" fill="#6366f1"  font-size="11" font-weight="600" id="nd-grid-power">— W</text>
+      <text x="415" y="341" text-anchor="middle" fill="#e8eaf0"  font-size="11" font-weight="700" id="nd-grid">—</text>
+    </svg>
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────────────────────
+   EmonCMS API helpers
+───────────────────────────────────────────────────────────────────────────── */
+
+async function apiFetch(path) {
+  const sep = path.includes("?") ? "&" : "?";
+  const url = `${CONFIG.emoncmsBase}${path}${sep}apikey=${CONFIG.apiKey}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${path}`);
+  return res.json();
+}
+
+// Returns the cumulative feed value at (or just after) a given Unix timestamp.
+// Uses feed/data.json with a 2-hour window because timevalue.json always
+// returns the latest point regardless of the requested time on this EmonCMS.
+async function feedValueAt(feedId, timestamp) {
+  if (!feedId) return 0;
+  // Align down to the nearest hour (data is stored at hourly resolution)
+  const alignedTs = Math.floor(timestamp / 3600) * 3600;
+  const data = await apiFetch(
+    `/feed/data.json?id=${feedId}&start=${alignedTs}&end=${alignedTs + 7200}&interval=3600&skipmissing=0&limitinterval=0`
+  );
+  if (!Array.isArray(data) || data.length === 0) return 0;
+  return data[0][1] ?? 0;
+}
+
+// Returns the current (latest) value of a feed.
+async function feedCurrentValue(feedId) {
+  if (!feedId) return 0;
+  const data = await apiFetch(`/feed/value.json?id=${feedId}`);
+  return parseFloat(data) || 0;
+}
+
+// Energy delta of a cumulative feed between startTs and now.
+// Uses feedValueAt for the historical start, feedCurrentValue for the live end.
+async function feedDelta(feedId, startTs) {
+  if (!feedId) return 0;
+  const [startVal, endVal] = await Promise.all([
+    feedValueAt(feedId, startTs),
+    feedCurrentValue(feedId),
+  ]);
+  return Math.max(0, endVal - startVal);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Period helpers
+───────────────────────────────────────────────────────────────────────────── */
+
+function periodBounds(period) {
+  const now = new Date();
+  let start;
+
+  switch (period) {
+    case "today": {
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      break;
+    }
+    case "week": {
+      // Monday as week start
+      const day = (now.getDay() + 6) % 7; // Mon=0 … Sun=6
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day);
+      break;
+    }
+    case "month": {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      break;
+    }
+    case "year": {
+      start = new Date(now.getFullYear(), 0, 1);
+      break;
+    }
+  }
+
+  return { startTs: Math.floor(start.getTime() / 1000) };
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Flow diagram
+───────────────────────────────────────────────────────────────────────────── */
+
+function renderFlowDiagram(solar, solarDirect, battCharge, battDischarge, gridImport, gridExport, house) {
+  const fmt  = v => v >= 0.05 ? `${v.toFixed(1)} kWh` : "";
+  const show = (id, visible) => { const el = document.getElementById(id); if (el) el.style.opacity = visible ? "1" : "0.08"; };
+  const set  = (id, val)     => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+  // Node labels
+  set("nd-solar", fmt(solar) || "—");
+  set("nd-grid",  gridImport > gridExport ? fmt(gridImport) : fmt(gridExport));
+
+  const pct = v => house > 0.05 ? `${Math.round((v / house) * 100)}%` : "—%";
+
+  // Solar → House
+  const sh = solarDirect  > 0.05;
+  show("fl-solar-house",  sh); show("lb-solar-house",  sh);
+  set("lb-solar-house",   fmt(solarDirect));
+
+  // Solar → Battery
+  const sb = battCharge   > 0.05;
+  show("fl-solar-bat",    sb); show("lb-solar-bat",    sb);
+  set("lb-solar-bat",     fmt(battCharge));
+
+  // Solar → Grid (export)
+  const sg = gridExport   > 0.05;
+  show("fl-solar-grid",   sg); show("lb-solar-grid",   sg);
+  set("lb-solar-grid",    fmt(gridExport));
+
+  // Battery → House
+  const bh = battDischarge > 0.05;
+  show("fl-bat-house",    bh); show("lb-bat-house",    bh);
+  set("lb-bat-house",     fmt(battDischarge));
+
+  // Grid → House
+  const gh = gridImport   > 0.05;
+  show("fl-grid-house",   gh); show("lb-grid-house",   gh);
+  set("lb-grid-house",    fmt(gridImport));
+
+  // House circle: total consumed
+  set("nd-house-total", fmt(house) || "—");
+
+  // House energy mix ring (arc r=58, stroke-width=20)
+  const arcR  = 58;
+  const C     = 2 * Math.PI * arcR; // ≈ 364.4
+  const total = solarDirect + battDischarge + gridImport || 1;
+  const sLen  = (solarDirect   / total) * C;
+  const bLen  = (battDischarge / total) * C;
+  const gLen  = (gridImport    / total) * C;
+
+  const startOffset = C / 4; // begin at top
+  const setArc = (id, len, offset) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.setAttribute("stroke-dasharray",  `${len.toFixed(2)} ${(C - len).toFixed(2)}`);
+    el.setAttribute("stroke-dashoffset", offset.toFixed(2));
+  };
+  setArc("house-arc-solar",   sLen, startOffset);
+  setArc("house-arc-battery", bLen, startOffset - sLen);
+  setArc("house-arc-grid",    gLen, startOffset - sLen - bLen);
+
+  // Place percentage labels at the midpoint of each arc segment
+  const pctLabel = (id, len, angleStart) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (len < C * 0.07) { el.textContent = ""; return; } // hide if segment too small
+    const angle = angleStart + (len / arcR) / 2;
+    el.setAttribute("x", (250 + arcR * Math.cos(angle)).toFixed(1));
+    el.setAttribute("y", (205 + arcR * Math.sin(angle)).toFixed(1));
+    el.textContent = `${Math.round((len / C) * 100)}%`;
+  };
+  const a0 = -Math.PI / 2;
+  pctLabel("arc-pct-solar",   sLen, a0);
+  pctLabel("arc-pct-battery", bLen, a0 + sLen / arcR);
+  pctLabel("arc-pct-grid",    gLen, a0 + sLen / arcR + bLen / arcR);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Main data load
+───────────────────────────────────────────────────────────────────────────── */
+
+const f = CONFIG.feeds;
+
+async function loadData(period) {
+  showError(null);
+  document.getElementById("last-updated").innerHTML = "Refreshing… <span class='spinner'></span>";
+
+  const { startTs } = periodBounds(period);
+
+  try {
+    const [
+      solar,
+      gridImport,
+      gridExport,
+      house,
+      battCharge,
+      battDischarge,
+      battSoc,
+    ] = await Promise.all([
+      feedDelta(f.solar,            startTs),
+      feedDelta(f.gridImport,       startTs),
+      feedDelta(f.gridExport,       startTs),
+      feedDelta(f.houseConsumption, startTs),
+      feedDelta(f.batteryCharge,    startTs),
+      feedDelta(f.batteryDischarge, startTs),
+      feedCurrentValue(f.batterySoc),
+    ]);
+
+    // ── Derived values ──────────────────────────────────────────────────────
+    // Solar direct = what solar produced minus what went to battery and grid
+    const solarDirect   = Math.max(0, solar - battCharge - gridExport);
+    const battContrib   = battDischarge;          // battery → house
+    const battNet       = battCharge - battDischarge; // net energy stored this period
+    const totalConsumed = house || (solarDirect + battContrib + gridImport);
+
+    // ── Flow diagram ─────────────────────────────────────────────────────────
+    renderFlowDiagram(solar, solarDirect, battCharge, battContrib, gridImport, gridExport, totalConsumed);
+
+    // ── Timestamp ───────────────────────────────────────────────────────────
+    const ts = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("last-updated").textContent = `Last updated ${ts}`;
+
+  } catch (err) {
+    console.error(err);
+    showError(`Failed to load data: ${err.message}. Check your API key and feed IDs in CONFIG.`);
+    document.getElementById("last-updated").textContent = "Update failed";
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById("error-banner");
+  el.style.display = msg ? "block" : "none";
+  el.textContent = msg || "";
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Live power
+───────────────────────────────────────────────────────────────────────────── */
+
+function fmtW(w) {
+  return w >= 1000 ? `${(w / 1000).toFixed(2)} kW` : `${Math.round(w)} W`;
+}
+
+async function loadPower() {
+  try {
+    const [solar, house, battCharge, battDisch, gridImp, gridExp, battSoc] = await Promise.all([
+      feedCurrentValue(f.solarPower),
+      feedCurrentValue(f.housePower),
+      feedCurrentValue(f.battChargePower),
+      feedCurrentValue(f.battDischPower),
+      feedCurrentValue(f.gridImportPower),
+      feedCurrentValue(f.gridExportPower),
+      feedCurrentValue(f.batterySoc),
+    ]);
+
+    // Mirror live power into the SVG circles
+    const svgSet = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    svgSet("nd-solar-power",   fmtW(solar));
+    svgSet("nd-house-power",   fmtW(house));
+    svgSet("nd-battery-power", fmtW(battDisch > battCharge ? battDisch : battCharge));
+    svgSet("nd-grid-power",    fmtW(gridExp  > gridImp    ? gridExp  : gridImp));
+
+    const socPct = Math.round(battSoc);
+    document.getElementById("nd-battery-soc").textContent = `${socPct} %`;
+
+    // ETA: to 100% when charging, to low threshold when discharging
+    function fmtEta(hours) {
+      const h = Math.floor(hours);
+      const m = Math.round((hours - h) * 60);
+      return h > 0 ? `${h}h${m.toString().padStart(2,"0")}m` : `${m}m`;
+    }
+    let etaText = "";
+    if (battCharge > battDisch && battCharge > 10) {
+      const toFull = ((100 - battSoc) / 100) * CONFIG.batteryCapacityKwh;
+      etaText = toFull > 0
+        ? `→ 100% ${fmtEta(toFull / (battCharge / 1000))}`
+        : "fully charged";
+    } else if (house > 10) {
+      const usableKwh = ((battSoc - CONFIG.batteryLowPct) / 100) * CONFIG.batteryCapacityKwh;
+      etaText = usableKwh <= 0
+        ? `below ${CONFIG.batteryLowPct}%`
+        : `→ ${CONFIG.batteryLowPct}% ${fmtEta(usableKwh / (house / 1000))}`;
+    }
+    document.getElementById("nd-battery-eta").textContent = etaText;
+
+  } catch (err) {
+    console.warn("Live power update failed:", err.message);
+  }
+}
+
+let powerTimer = null;
+function schedulePowerRefresh() {
+  if (powerTimer) clearInterval(powerTimer);
+  powerTimer = setInterval(loadPower, CONFIG.powerRefreshInterval);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tab switching
+───────────────────────────────────────────────────────────────────────────── */
+
+let currentPeriod = "today";
+let refreshTimer  = null;
+
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    currentPeriod = tab.dataset.period;
+    schedulRefresh();
+    loadData(currentPeriod);
+  });
+});
+
+function schedulRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => loadData(currentPeriod), CONFIG.refreshInterval);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Init
+───────────────────────────────────────────────────────────────────────────── */
+
+schedulRefresh();
+schedulePowerRefresh();
+loadData(currentPeriod);
+loadPower();
+</script>
+</body>
+</html>
