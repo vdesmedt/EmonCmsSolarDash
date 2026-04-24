@@ -276,7 +276,7 @@ const CONFIG = {
       <circle cx="85"  cy="318" r="48" fill="#1a1d27" stroke="#10b981" stroke-width="2"/>
       <text x="85"  y="300" text-anchor="middle" font-size="16">🔋</text>
       <text x="85"  y="313" text-anchor="middle" fill="#10b981"  font-size="10" font-weight="700" letter-spacing="1">BATTERY</text>
-      <text x="85"  y="325" text-anchor="middle" fill="#10b981"  font-size="11" font-weight="600" id="nd-battery-power">— W</text>
+      <text x="85"  y="325" text-anchor="middle" fill="#10b981" font-size="11" font-weight="600" id="nd-battery-power">— W</text>
       <text x="85"  y="337" text-anchor="middle" fill="#e8eaf0"  font-size="12" font-weight="700" id="nd-battery-soc">— %</text>
       <text x="85"  y="349" text-anchor="middle" fill="#9ca3af"  font-size="9"  id="nd-battery-eta"></text>
 
@@ -527,7 +527,12 @@ async function loadPower() {
     const svgSet = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     svgSet("nd-solar-power",   fmtW(solar));
     svgSet("nd-house-power",   fmtW(house));
-    svgSet("nd-battery-power", fmtW(battDisch > battCharge ? battDisch : battCharge));
+    const battPowerEl = document.getElementById("nd-battery-power");
+    if (battPowerEl) {
+      const isDischarging = battDisch > battCharge;
+      battPowerEl.textContent = fmtW(isDischarging ? battDisch : battCharge);
+      battPowerEl.setAttribute("fill", isDischarging ? "#6366f1" : "#10b981");
+    }
     svgSet("nd-grid-power",    fmtW(gridExp  > gridImp    ? gridExp  : gridImp));
 
     const socPct = Math.round(battSoc);
