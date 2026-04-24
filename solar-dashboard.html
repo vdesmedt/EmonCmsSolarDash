@@ -418,7 +418,7 @@ function renderFlowDiagram(solar, solarDirect, battCharge, battDischarge, gridIm
   const bLen  = (battDischarge / total) * C;
   const gLen  = (gridImport    / total) * C;
 
-  const startOffset = C / 4; // begin at top
+  const startOffset = C / 4 + sLen / 2; // center solar segment on 12 o'clock
   const setArc = (id, len, offset) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -439,7 +439,7 @@ function renderFlowDiagram(solar, solarDirect, battCharge, battDischarge, gridIm
     el.setAttribute("y", (205 + arcR * Math.sin(angle)).toFixed(1));
     el.textContent = `${Math.round((len / C) * 100)}%`;
   };
-  const a0 = -Math.PI / 2;
+  const a0 = -Math.PI / 2 - sLen / (2 * arcR); // solar centered on top
   pctLabel("arc-pct-solar",   sLen, a0);
   pctLabel("arc-pct-grid",    gLen, a0 + sLen / arcR);
   pctLabel("arc-pct-battery", bLen, a0 + sLen / arcR + gLen / arcR);
