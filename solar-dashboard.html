@@ -254,7 +254,7 @@ const CONFIG = {
       <circle cx="250" cy="65" r="52" fill="#1a1d27" stroke="#f59e0b" stroke-width="2"/>
       <text x="250" y="49"  text-anchor="middle" font-size="18">☀️</text>
       <text x="250" y="68"  text-anchor="middle" fill="#f59e0b"  font-size="11" font-weight="600" id="nd-solar-power">— W</text>
-      <text x="250" y="82"  text-anchor="middle" fill="#e8eaf0"  font-size="11" font-weight="700" id="nd-solar">—</text>
+      <text x="250" y="82"  text-anchor="middle" fill="#9ca3af"  font-size="10" id="nd-solar">— kWh</text>
 
       <!-- ── Node: House (center) ── -->
       <circle cx="250" cy="205" r="70" fill="#1a1d27"/>
@@ -285,7 +285,7 @@ const CONFIG = {
       <circle cx="415" cy="318" r="48" fill="#1a1d27" stroke="#6366f1" stroke-width="2"/>
       <text x="415" y="302" text-anchor="middle" font-size="18">⚡</text>
       <text x="415" y="318" text-anchor="middle" fill="#6366f1"  font-size="11" font-weight="600" id="nd-grid-power">— W</text>
-      <text x="415" y="332" text-anchor="middle" fill="#e8eaf0"  font-size="11" font-weight="700" id="nd-grid">—</text>
+      <text x="415" y="332" text-anchor="middle" fill="#9ca3af"  font-size="10" id="nd-grid">— kWh</text>
     </svg>
   </div>
 </div>
@@ -377,8 +377,8 @@ function renderFlowDiagram(solar, solarDirect, battCharge, battDischarge, gridIm
   const set  = (id, val)     => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
   // Node labels
-  set("nd-solar", fmt(solar) || "—");
-  set("nd-grid",  gridImport > gridExport ? fmt(gridImport) : fmt(gridExport));
+  set("nd-solar", solar > 0 ? `${fmt(solar)} kWh` : "— kWh");
+  set("nd-grid",  (() => { const v = gridImport > gridExport ? gridImport : gridExport; return v > 0 ? `${fmt(v)} kWh` : "— kWh"; })());
 
   const pct = v => house > 0.05 ? `${Math.round((v / house) * 100)}%` : "—%";
 
