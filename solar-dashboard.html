@@ -260,8 +260,8 @@ const CONFIG = {
       <circle cx="250" cy="205" r="70" fill="#1a1d27"/>
       <!-- Energy mix ring (r=58, stroke-width=20 → band sits at r 48–68) -->
       <circle id="house-arc-solar"   cx="250" cy="205" r="57" fill="none" stroke="#f59e0b" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
-      <circle id="house-arc-battery" cx="250" cy="205" r="57" fill="none" stroke="#10b981" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
       <circle id="house-arc-grid"    cx="250" cy="205" r="57" fill="none" stroke="#6366f1" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
+      <circle id="house-arc-battery" cx="250" cy="205" r="57" fill="none" stroke="#10b981" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
       <!-- Percentage labels on the arc (positioned by JS) -->
       <text id="arc-pct-solar"   text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="700"></text>
       <text id="arc-pct-battery" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="700"></text>
@@ -426,8 +426,8 @@ function renderFlowDiagram(solar, solarDirect, battCharge, battDischarge, gridIm
     el.setAttribute("stroke-dashoffset", offset.toFixed(2));
   };
   setArc("house-arc-solar",   sLen, startOffset);
-  setArc("house-arc-battery", bLen, startOffset - sLen);
-  setArc("house-arc-grid",    gLen, startOffset - sLen - bLen);
+  setArc("house-arc-grid",    gLen, startOffset - sLen);
+  setArc("house-arc-battery", bLen, startOffset - sLen - gLen);
 
   // Place percentage labels at the midpoint of each arc segment
   const pctLabel = (id, len, angleStart) => {
@@ -441,8 +441,8 @@ function renderFlowDiagram(solar, solarDirect, battCharge, battDischarge, gridIm
   };
   const a0 = -Math.PI / 2;
   pctLabel("arc-pct-solar",   sLen, a0);
-  pctLabel("arc-pct-battery", bLen, a0 + sLen / arcR);
-  pctLabel("arc-pct-grid",    gLen, a0 + sLen / arcR + bLen / arcR);
+  pctLabel("arc-pct-grid",    gLen, a0 + sLen / arcR);
+  pctLabel("arc-pct-battery", bLen, a0 + sLen / arcR + gLen / arcR);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
