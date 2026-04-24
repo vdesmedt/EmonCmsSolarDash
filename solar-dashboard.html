@@ -222,33 +222,33 @@ const CONFIG = {
     <h2>Energy flow</h2>
     <svg id="flow-svg" viewBox="0 0 500 390" style="display:block">
       <defs>
-        <marker id="arr-solar"   markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#f59e0b"/></marker>
-        <marker id="arr-battery" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#10b981"/></marker>
-        <marker id="arr-grid"    markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#6366f1"/></marker>
-        <marker id="arr-export"  markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L0,8 L10,4 z" fill="#ec4899"/></marker>
+        <marker id="arr-solar"   markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="10" refX="13" refY="5" orient="auto"><path d="M0,0 L0,10 L14,5 z" fill="#f59e0b"/></marker>
+        <marker id="arr-battery" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="10" refX="13" refY="5" orient="auto"><path d="M0,0 L0,10 L14,5 z" fill="#10b981"/></marker>
+        <marker id="arr-grid"    markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="10" refX="13" refY="5" orient="auto"><path d="M0,0 L0,10 L14,5 z" fill="#6366f1"/></marker>
+        <marker id="arr-export"  markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="10" refX="13" refY="5" orient="auto"><path d="M0,0 L0,10 L14,5 z" fill="#ec4899"/></marker>
       </defs>
 
       <!-- ── Arrows (behind nodes) ── -->
 
-      <!-- Solar → House (direct use) -->
-      <line id="fl-solar-house"  x1="250" y1="100" x2="250" y2="147" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arr-solar)"/>
-      <text id="lb-solar-house"  x="258" y="127" fill="#f59e0b" font-size="12" font-weight="600"></text>
+      <!-- Solar → House (direct use) — endpoint 14px before house top edge -->
+      <line id="fl-solar-house"  x1="250" y1="100" x2="250" y2="133" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arr-solar)"/>
+      <text id="lb-solar-house"  x="258" y="116" fill="#f59e0b" font-size="12" font-weight="600"></text>
 
-      <!-- Solar → Battery (arc on circumscribed circle R=145, CCW, stops before battery circle) -->
-      <path id="fl-solar-bat"  d="M 204 66 A 145 145 0 0 0 112 248" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arr-solar)"/>
-      <text id="lb-solar-bat"  x="108" y="135" fill="#f59e0b" font-size="12" font-weight="600" text-anchor="end" transform="rotate(-63,108,135)"></text>
+      <!-- Solar → Battery (arc R=145, CCW, 14px before battery circle) -->
+      <path id="fl-solar-bat"  d="M 204 66 A 145 145 0 0 0 110 241" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#arr-solar)"/>
+      <text id="lb-solar-bat"  x="105" y="124" fill="#f59e0b" font-size="12" font-weight="600" text-anchor="end" transform="rotate(-62,105,124)"></text>
 
-      <!-- Solar → Grid (arc on circumscribed circle R=145, CW, stops before grid circle) -->
-      <path id="fl-solar-grid" d="M 296 66 A 145 145 0 0 1 388 248" fill="none" stroke="#ec4899" stroke-width="2" marker-end="url(#arr-export)"/>
-      <text id="lb-solar-grid" x="392" y="135" fill="#ec4899" font-size="12" font-weight="600" transform="rotate(63,392,135)"></text>
+      <!-- Solar → Grid (arc R=145, CW, 14px before grid circle) -->
+      <path id="fl-solar-grid" d="M 296 66 A 145 145 0 0 1 390 241" fill="none" stroke="#ec4899" stroke-width="2" marker-end="url(#arr-export)"/>
+      <text id="lb-solar-grid" x="395" y="124" fill="#ec4899" font-size="12" font-weight="600" transform="rotate(62,395,124)"></text>
 
-      <!-- Battery → House -->
-      <line id="fl-bat-house"    x1="163" y1="265" x2="202" y2="238" stroke="#10b981" stroke-width="2.5" marker-end="url(#arr-battery)"/>
-      <text id="lb-bat-house"  x="160" y="255" fill="#10b981" font-size="12" font-weight="600" text-anchor="end" transform="rotate(-35,160,255)"></text>
+      <!-- Battery → House — endpoint 14px before house edge -->
+      <line id="fl-bat-house"    x1="163" y1="265" x2="191" y2="246" stroke="#10b981" stroke-width="2.5" marker-end="url(#arr-battery)"/>
+      <text id="lb-bat-house"  x="167" y="262" fill="#10b981" font-size="12" font-weight="600" text-anchor="middle" transform="rotate(-34,167,262)"></text>
 
-      <!-- Grid → House -->
-      <line id="fl-grid-house"   x1="337" y1="265" x2="298" y2="238" stroke="#6366f1" stroke-width="2.5" marker-end="url(#arr-grid)"/>
-      <text id="lb-grid-house" x="340" y="255" fill="#6366f1" font-size="12" font-weight="600" transform="rotate(35,340,255)"></text>
+      <!-- Grid → House — endpoint 14px before house edge -->
+      <line id="fl-grid-house"   x1="337" y1="265" x2="309" y2="246" stroke="#6366f1" stroke-width="2.5" marker-end="url(#arr-grid)"/>
+      <text id="lb-grid-house" x="333" y="262" fill="#6366f1" font-size="12" font-weight="600" text-anchor="middle" transform="rotate(34,333,262)"></text>
 
       <!-- ── Node: Solar (top center) ── -->
       <circle cx="250" cy="58" r="42" fill="#1a1d27" stroke="#f59e0b" stroke-width="2"/>
