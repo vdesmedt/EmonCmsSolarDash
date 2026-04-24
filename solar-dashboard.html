@@ -377,8 +377,8 @@ function renderFlowDiagram(solar, solarDirect, battCharge, battDischarge, gridIm
   const set  = (id, val)     => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
   // Node labels
-  set("nd-solar", solar > 0 ? `${fmt(solar)} kWh` : "— kWh");
-  set("nd-grid",  (() => { const v = gridImport > gridExport ? gridImport : gridExport; return v > 0 ? `${fmt(v)} kWh` : "— kWh"; })());
+  set("nd-solar", fmt(solar) || "— kWh");
+  set("nd-grid",  (() => { const v = gridImport > gridExport ? gridImport : gridExport; return fmt(v) || "— kWh"; })());
 
   const pct = v => house > 0.05 ? `${Math.round((v / house) * 100)}%` : "—%";
 
