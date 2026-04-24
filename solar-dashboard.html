@@ -259,9 +259,9 @@ const CONFIG = {
       <!-- ── Node: House (center) ── -->
       <circle cx="250" cy="205" r="70" fill="#1a1d27"/>
       <!-- Energy mix ring (r=58, stroke-width=20 → band sits at r 48–68) -->
-      <circle id="house-arc-solar"   cx="250" cy="205" r="58" fill="none" stroke="#f59e0b" stroke-width="20" stroke-dasharray="0 364.4" stroke-dashoffset="91.1" stroke-linecap="butt"/>
-      <circle id="house-arc-battery" cx="250" cy="205" r="58" fill="none" stroke="#10b981" stroke-width="20" stroke-dasharray="0 364.4" stroke-dashoffset="91.1" stroke-linecap="butt"/>
-      <circle id="house-arc-grid"    cx="250" cy="205" r="58" fill="none" stroke="#6366f1" stroke-width="20" stroke-dasharray="0 364.4" stroke-dashoffset="91.1" stroke-linecap="butt"/>
+      <circle id="house-arc-solar"   cx="250" cy="205" r="57" fill="none" stroke="#f59e0b" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
+      <circle id="house-arc-battery" cx="250" cy="205" r="57" fill="none" stroke="#10b981" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
+      <circle id="house-arc-grid"    cx="250" cy="205" r="57" fill="none" stroke="#6366f1" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
       <!-- Percentage labels on the arc (positioned by JS) -->
       <text id="arc-pct-solar"   text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="700"></text>
       <text id="arc-pct-battery" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="10" font-weight="700"></text>
@@ -411,8 +411,8 @@ function renderFlowDiagram(solar, solarDirect, battCharge, battDischarge, gridIm
   set("nd-house-total", fmt(house) || "—");
 
   // House energy mix ring (arc r=58, stroke-width=20)
-  const arcR  = 58;
-  const C     = 2 * Math.PI * arcR; // ≈ 364.4
+  const arcR  = 57;
+  const C     = 2 * Math.PI * arcR; // ≈ 358.1
   const total = solarDirect + battDischarge + gridImport || 1;
   const sLen  = (solarDirect   / total) * C;
   const bLen  = (battDischarge / total) * C;
