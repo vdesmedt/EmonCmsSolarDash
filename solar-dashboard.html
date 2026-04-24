@@ -231,34 +231,34 @@ const CONFIG = {
       <!-- ── Arrows (behind nodes) ── -->
 
       <!-- Solar → House (direct use) -->
-      <line id="fl-solar-house"  x1="250" y1="118" x2="250" y2="135" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arr-solar)"/>
-      <text id="lb-solar-house"  x="258"  y="138"  fill="#f59e0b" font-size="12" font-weight="600"></text>
+      <line id="fl-solar-house"  x1="250" y1="110" x2="250" y2="135" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arr-solar)"/>
+      <text id="lb-solar-house"  x="258"  y="132"  fill="#f59e0b" font-size="12" font-weight="600"></text>
 
       <!-- Solar → Battery (arc curving left along circumscribed circle) -->
-      <path id="fl-solar-bat"  d="M 199 74 Q 30 102 73 271" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-solar)"/>
-      <text id="lb-solar-bat"  x="88"  y="148" fill="#f59e0b" font-size="12" font-weight="600" text-anchor="end"></text>
+      <path id="fl-solar-bat"  d="M 226 104 Q 20 180 154 243" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-solar)"/>
+      <text id="lb-solar-bat"  x="75"  y="168" fill="#f59e0b" font-size="12" font-weight="600" text-anchor="end"></text>
 
       <!-- Solar → Grid (arc curving right along circumscribed circle) -->
-      <path id="fl-solar-grid" d="M 301 74 Q 470 102 403 271" fill="none" stroke="#ec4899" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-export)"/>
-      <text id="lb-solar-grid" x="412" y="148" fill="#ec4899" font-size="12" font-weight="600"></text>
+      <path id="fl-solar-grid" d="M 274 104 Q 480 180 346 243" fill="none" stroke="#ec4899" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#arr-export)"/>
+      <text id="lb-solar-grid" x="425" y="168" fill="#ec4899" font-size="12" font-weight="600"></text>
 
       <!-- Battery → House -->
-      <line id="fl-bat-house"    x1="127" y1="287" x2="192" y2="245" stroke="#10b981" stroke-width="2.5" marker-end="url(#arr-battery)"/>
-      <text id="lb-bat-house"    x="148"  y="275"  fill="#10b981" font-size="12" font-weight="600" text-anchor="end"></text>
+      <line id="fl-bat-house"    x1="172" y1="259" x2="192" y2="245" stroke="#10b981" stroke-width="2.5" marker-end="url(#arr-battery)"/>
+      <text id="lb-bat-house"    x="155"  y="258"  fill="#10b981" font-size="12" font-weight="600" text-anchor="end"></text>
 
       <!-- Grid → House -->
-      <line id="fl-grid-house"   x1="373" y1="287" x2="308" y2="245" stroke="#6366f1" stroke-width="2.5" marker-end="url(#arr-grid)"/>
-      <text id="lb-grid-house"   x="352"  y="275"  fill="#6366f1" font-size="12" font-weight="600"></text>
+      <line id="fl-grid-house"   x1="328" y1="259" x2="308" y2="245" stroke="#6366f1" stroke-width="2.5" marker-end="url(#arr-grid)"/>
+      <text id="lb-grid-house"   x="345"  y="258"  fill="#6366f1" font-size="12" font-weight="600"></text>
 
       <!-- ── Node: Solar (top center) ── -->
-      <circle cx="250" cy="65" r="52" fill="#1a1d27" stroke="#f59e0b" stroke-width="2"/>
-      <text x="250" y="49"  text-anchor="middle" font-size="18">☀️</text>
-      <text x="250" y="68"  text-anchor="middle" fill="#f59e0b"  font-size="11" font-weight="600" id="nd-solar-power">— W</text>
-      <text x="250" y="82"  text-anchor="middle" fill="#9ca3af"  font-size="10" id="nd-solar">— kWh</text>
+      <circle cx="250" cy="58" r="52" fill="#1a1d27" stroke="#f59e0b" stroke-width="2"/>
+      <text x="250" y="42"  text-anchor="middle" font-size="18">☀️</text>
+      <text x="250" y="61"  text-anchor="middle" fill="#f59e0b"  font-size="11" font-weight="600" id="nd-solar-power">— W</text>
+      <text x="250" y="75"  text-anchor="middle" fill="#9ca3af"  font-size="10" id="nd-solar">— kWh</text>
 
       <!-- ── Node: House (center) ── -->
       <circle cx="250" cy="205" r="70" fill="#1a1d27"/>
-      <!-- Energy mix ring (r=58, stroke-width=20 → band sits at r 48–68) -->
+      <!-- Energy mix ring -->
       <circle id="house-arc-solar"   cx="250" cy="205" r="57" fill="none" stroke="#f59e0b" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
       <circle id="house-arc-grid"    cx="250" cy="205" r="57" fill="none" stroke="#6366f1" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
       <circle id="house-arc-battery" cx="250" cy="205" r="57" fill="none" stroke="#10b981" stroke-width="25" stroke-dasharray="0 358.1" stroke-dashoffset="89.5" stroke-linecap="butt"/>
@@ -272,20 +272,20 @@ const CONFIG = {
       <text x="250" y="217" text-anchor="middle" fill="#9ca3af" font-size="10" id="nd-house-total">— kWh</text>
 
       <!-- ── Node: Battery (bottom-left) ── -->
-      <circle cx="85"  cy="318" r="48" fill="#1a1d27" stroke="#10b981" stroke-width="2"/>
+      <circle cx="132" cy="286" r="48" fill="#1a1d27" stroke="#10b981" stroke-width="2"/>
       <!-- Horizontal battery icon -->
-      <rect x="68" y="293" width="34" height="14" rx="2" fill="none" stroke="#10b981" stroke-width="1.5"/>
-      <rect x="102" y="297" width="3" height="6" rx="1" fill="#10b981"/>
-      <rect id="nd-battery-fill" x="70" y="295" width="0" height="10" rx="1" fill="#10b981"/>
-      <text x="85"  y="300" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="8" font-weight="700" id="nd-battery-soc">— %</text>
-      <text x="85"  y="320" text-anchor="middle" fill="#10b981" font-size="11" font-weight="600" id="nd-battery-power">— W</text>
-      <text x="85"  y="334" text-anchor="middle" fill="#9ca3af"  font-size="9"  id="nd-battery-eta"></text>
+      <rect x="115" y="261" width="34" height="14" rx="2" fill="none" stroke="#10b981" stroke-width="1.5"/>
+      <rect x="149" y="265" width="3" height="6" rx="1" fill="#10b981"/>
+      <rect id="nd-battery-fill" x="117" y="263" width="0" height="10" rx="1" fill="#10b981"/>
+      <text x="132" y="268" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="8" font-weight="700" id="nd-battery-soc">— %</text>
+      <text x="132" y="288" text-anchor="middle" fill="#10b981" font-size="11" font-weight="600" id="nd-battery-power">— W</text>
+      <text x="132" y="302" text-anchor="middle" fill="#9ca3af"  font-size="9"  id="nd-battery-eta"></text>
 
       <!-- ── Node: Grid (bottom-right) ── -->
-      <circle cx="415" cy="318" r="48" fill="#1a1d27" stroke="#6366f1" stroke-width="2"/>
-      <text x="415" y="302" text-anchor="middle" font-size="18">⚡</text>
-      <text x="415" y="318" text-anchor="middle" fill="#6366f1"  font-size="11" font-weight="600" id="nd-grid-power">— W</text>
-      <text x="415" y="332" text-anchor="middle" fill="#9ca3af"  font-size="10" id="nd-grid">— kWh</text>
+      <circle cx="368" cy="286" r="48" fill="#1a1d27" stroke="#6366f1" stroke-width="2"/>
+      <text x="368" y="270" text-anchor="middle" font-size="18">⚡</text>
+      <text x="368" y="286" text-anchor="middle" fill="#6366f1"  font-size="11" font-weight="600" id="nd-grid-power">— W</text>
+      <text x="368" y="300" text-anchor="middle" fill="#9ca3af"  font-size="10" id="nd-grid">— kWh</text>
     </svg>
   </div>
 </div>
